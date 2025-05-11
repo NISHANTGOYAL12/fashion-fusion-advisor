@@ -5,12 +5,14 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Link } from 'react-router-dom';
+import { Facebook, Github, Twitter } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithSocialMedia } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,6 +21,17 @@ const LoginForm = () => {
     try {
       setIsSubmitting(true);
       await login(email, password);
+    } catch (error) {
+      // Error is handled in the auth context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      setIsSubmitting(true);
+      await loginWithSocialMedia(provider);
     } catch (error) {
       // Error is handled in the auth context
     } finally {
@@ -72,6 +85,42 @@ const LoginForm = () => {
           >
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>
+
+          <div className="flex items-center gap-4 my-4">
+            <Separator className="flex-1" />
+            <span className="text-xs text-muted-foreground">OR</span>
+            <Separator className="flex-1" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin('facebook')}
+              disabled={isSubmitting}
+              className="flex items-center justify-center"
+            >
+              <Facebook className="h-5 w-5 text-blue-600" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin('twitter')}
+              disabled={isSubmitting}
+              className="flex items-center justify-center"
+            >
+              <Twitter className="h-5 w-5 text-sky-500" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin('github')}
+              disabled={isSubmitting}
+              className="flex items-center justify-center"
+            >
+              <Github className="h-5 w-5" />
+            </Button>
+          </div>
         </form>
       </CardContent>
       <CardFooter className="flex justify-center">

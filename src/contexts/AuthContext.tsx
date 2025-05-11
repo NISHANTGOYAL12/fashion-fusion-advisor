@@ -8,6 +8,7 @@ type User = {
   id: string;
   email: string;
   name?: string;
+  provider?: string;
 };
 
 type AuthContextType = {
@@ -15,6 +16,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
+  loginWithSocialMedia: (provider: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -22,7 +24,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock database of users (in a real app this would be in a database)
-const mockUsers: Record<string, { id: string; email: string; password: string; name: string }> = {
+const mockUsers: Record<string, { id: string; email: string; password: string; name: string; provider?: string }> = {
   'user1@example.com': {
     id: 'user1',
     email: 'user1@example.com',
@@ -67,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const authenticatedUser = {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        provider: user.provider || 'email'
       };
       
       setUser(authenticatedUser);
@@ -76,6 +79,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/profile');
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithSocialMedia = async (provider: string) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, this would redirect to the social media OAuth flow
+      // For now, we'll just create a mock user for each provider
+      
+      // Generate a random user ID and email
+      const randomId = `${provider}-user-${Math.random().toString(36).substring(2, 9)}`;
+      const randomEmail = `${randomId}@example.com`;
+      
+      // Create a mock user for the provider
+      const providerUser = {
+        id: randomId,
+        email: randomEmail,
+        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
+        provider: provider
+      };
+      
+      // Add user to mock DB
+      mockUsers[randomEmail] = {
+        ...providerUser,
+        password: 'socialMediaPassword' // Not used for social media logins
+      };
+      
+      setUser(providerUser);
+      localStorage.setItem('user', JSON.stringify(providerUser));
+      toast.success(`Successfully logged in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+      navigate('/profile');
+    } catch (error: any) {
+      toast.error(error.message || `${provider} login failed`);
       throw error;
     } finally {
       setIsLoading(false);
@@ -99,7 +141,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: `user${Object.keys(mockUsers).length + 1}`,
         email: lowerEmail,
         password,
-        name
+        name,
+        provider: 'email'
       };
       
       // Add to mock DB (in a real app, this would be an API call)
@@ -109,7 +152,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const authenticatedUser = {
         id: newUser.id,
         email: newUser.email,
-        name: newUser.name
+        name: newUser.name,
+        provider: newUser.provider
       };
       
       setUser(authenticatedUser);
@@ -132,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signup, loginWithSocialMedia, logout }}>
       {children}
     </AuthContext.Provider>
   );
