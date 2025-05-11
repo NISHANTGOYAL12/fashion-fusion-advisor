@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <nav className="bg-white shadow-sm py-4">
@@ -33,18 +35,49 @@ const Navbar = () => {
           <Link to="/" className="font-medium hover:text-primary transition-colors">
             Home
           </Link>
-          <Link to="/profile" className="font-medium hover:text-primary transition-colors">
-            My Profile
-          </Link>
-          <Link to="/outfits" className="font-medium hover:text-primary transition-colors">
-            Outfits
-          </Link>
+          {user && (
+            <>
+              <Link to="/profile" className="font-medium hover:text-primary transition-colors">
+                My Profile
+              </Link>
+              <Link to="/outfits" className="font-medium hover:text-primary transition-colors">
+                Outfits
+              </Link>
+            </>
+          )}
           <Link to="/pricing" className="font-medium hover:text-primary transition-colors">
             Pricing
           </Link>
-          <button className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors">
-            Sign In
-          </button>
+          
+          {user ? (
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-primary" />
+                <span className="font-medium text-sm">{user.name || user.email}</span>
+              </div>
+              <button 
+                onClick={logout}
+                className="bg-secondary text-foreground px-6 py-2 rounded-md hover:bg-secondary/80 transition-colors"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div className="space-x-4">
+              <Link 
+                to="/login" 
+                className="font-medium hover:text-primary transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                to="/signup" 
+                className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile Navigation */}
@@ -58,20 +91,26 @@ const Navbar = () => {
               >
                 Home
               </Link>
-              <Link 
-                to="/profile" 
-                className="font-medium hover:text-primary transition-colors p-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                My Profile
-              </Link>
-              <Link 
-                to="/outfits" 
-                className="font-medium hover:text-primary transition-colors p-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Outfits
-              </Link>
+              
+              {user && (
+                <>
+                  <Link 
+                    to="/profile" 
+                    className="font-medium hover:text-primary transition-colors p-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link 
+                    to="/outfits" 
+                    className="font-medium hover:text-primary transition-colors p-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Outfits
+                  </Link>
+                </>
+              )}
+              
               <Link 
                 to="/pricing" 
                 className="font-medium hover:text-primary transition-colors p-2"
@@ -79,12 +118,41 @@ const Navbar = () => {
               >
                 Pricing
               </Link>
-              <button 
-                className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </button>
+              
+              {user ? (
+                <>
+                  <div className="flex items-center space-x-2 p-2">
+                    <User className="h-5 w-5 text-primary" />
+                    <span className="font-medium text-sm">{user.name || user.email}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="bg-secondary text-foreground px-6 py-2 rounded-md hover:bg-secondary/80 transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/login" 
+                    className="font-medium hover:text-primary transition-colors p-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    to="/signup" 
+                    className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
